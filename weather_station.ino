@@ -2,10 +2,7 @@
 #define VERSION_MINOR 1
 #define VERSION_PATCH 0
 
-#define WIFI_HOST ""
-#define WIFI_SSID ""
-#define WIFI_PASS ""
-
+#include "weather_station/wifi.h"
 #include <ESP8266WiFi.h>
 
 void(* resetFunc) (void) = 0;
