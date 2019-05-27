@@ -3,6 +3,7 @@
 #define VERSION_PATCH 0
 
 #include "weather_station/wifi.h"
+#include <Adafruit_BME280.h>
 #include <ESP8266WiFi.h>
 
 void(* resetFunc) (void) = 0;
@@ -22,6 +23,46 @@ void indicateConnected() {
   digitalWrite(BUILTIN_LED, LOW);
   delay(2000);
   digitalWrite(BUILTIN_LED, HIGH);
+}
+
+void measureAndShowValues() {
+  Adafruit_BME280 bme;
+  bool bme_status;
+  bme_status = bme.begin(0x76);  //address either 0x76 or 0x77
+  if (!bme_status) {
+      Serial.println("Could not find a valid BME280 sensor, check wiring!");
+  }
+
+  bme.setSampling(Adafruit_BME280::MODE_FORCED,
+                Adafruit_BME280::SAMPLING_X1, // temperature
+                Adafruit_BME280::SAMPLING_X1, // pressure
+                Adafruit_BME280::SAMPLING_X1, // humidity
+  Adafruit_BME280::FILTER_OFF );
+
+  bme.takeForcedMeasurement();
+
+  // Get temperature
+  float measured_temp = bme.readTemperature();
+  measured_temp = measured_temp + 0.0f;
+  // print on serial monitor
+  Serial.print("Temp: ");
+  Serial.print(measured_temp);
+  Serial.print("°C; ");
+
+  // Get humidity
+  float measured_humi = bme.readHumidity();
+  // print on serial monitor
+  Serial.print("Humidity: ");
+  Serial.print(measured_humi);
+  Serial.print("%; ");
+
+  // Get pressure
+  float measured_pres = bme.readPressure() / 100.0F;
+  // print on serial monitor
+  Serial.print("Pressure: ");
+  Serial.print(measured_pres);
+  Serial.print("hPa; ");
+  Serial.println();
 }
 
 void setup() {
@@ -53,8 +94,6 @@ void setup() {
 }
 
 void loop() {
-  Serial.printf("Chip ID = %08X\n", ESP.getChipId());
-  Serial.println("");
-  WiFi.printDiag(Serial);
+  measureAndShowValues();
   delay(5000);
 }
