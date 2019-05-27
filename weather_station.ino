@@ -62,6 +62,11 @@ void measureAndShowValues() {
   Serial.print("Pressure: ");
   Serial.print(measured_pres);
   Serial.print("hPa; ");
+
+  // Show the ChipID / Sensor ID
+  Serial.printf("ChipID: %08X;", ESP.getChipId());
+
+  // new line
   Serial.println();
 }
 
