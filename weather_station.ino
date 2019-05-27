@@ -5,6 +5,7 @@
 #include "weather_station/wifi.h"
 #include <Adafruit_BME280.h>
 #include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
 
 void(* resetFunc) (void) = 0;
 
@@ -23,6 +24,25 @@ void indicateConnected() {
   digitalWrite(BUILTIN_LED, LOW);
   delay(2000);
   digitalWrite(BUILTIN_LED, HIGH);
+}
+
+void sendTemperature(float temp) {
+  char tmp[9];
+  sprintf(tmp, "%08X", ESP.getChipId());
+  HTTPClient http;
+  String postUrl = "http://192.168.1.13:8000/v1/temperature/";
+  postUrl += String(tmp);
+  String postData = "{\"value\":";
+  postData += String(temp);
+  postData += "}";
+  Serial.printf("DEBUG = %s\n", postData.c_str());
+  http.begin(postUrl);
+  http.addHeader("Content-Type", "application/json");
+  int httpCode = http.POST(postData);
+  if(200 != httpCode) {
+    Serial.println("Could not send temperature to endpoint.");
+  }
+  http.end();
 }
 
 void measureAndShowValues() {
@@ -48,6 +68,7 @@ void measureAndShowValues() {
   Serial.print("Temp: ");
   Serial.print(measured_temp);
   Serial.print("°C; ");
+  sendTemperature(measured_temp);
 
   // Get humidity
   float measured_humi = bme.readHumidity();
