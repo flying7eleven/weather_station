@@ -26,20 +26,23 @@ void indicateConnected() {
   digitalWrite(BUILTIN_LED, HIGH);
 }
 
-void sendTemperature(float temp) {
+void sendMeasurements(float temp, float humidity, float pressure) {
   char tmp[9];
   sprintf(tmp, "%08X", ESP.getChipId());
   HTTPClient http;
-  String postUrl = "http://192.168.1.13:8000/v1/temperature/";
+  String postUrl = "http://192.168.1.13:8000/v1/measurement/";
   postUrl += String(tmp);
-  String postData = "{\"value\":";
+  String postData = "{\"temperature\":";
   postData += String(temp);
+  postData += ",\"humidity\":";
+  postData += String(humidity);
+  postData += ",\"pressure\":";
+  postData += String(pressure);
   postData += "}";
-  Serial.printf("DEBUG = %s\n", postData.c_str());
   http.begin(postUrl);
   http.addHeader("Content-Type", "application/json");
   int httpCode = http.POST(postData);
-  if(200 != httpCode) {
+  if(204 != httpCode) {
     Serial.println("Could not send temperature to endpoint.");
   }
   http.end();
@@ -68,7 +71,6 @@ void measureAndShowValues() {
   Serial.print("Temp: ");
   Serial.print(measured_temp);
   Serial.print("°C; ");
-  sendTemperature(measured_temp);
 
   // Get humidity
   float measured_humi = bme.readHumidity();
@@ -89,6 +91,9 @@ void measureAndShowValues() {
 
   // new line
   Serial.println();
+
+  // send it
+  sendMeasurements(measured_temp, measured_humi, measured_pres);
 }
 
 void setup() {
