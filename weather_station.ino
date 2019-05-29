@@ -31,18 +31,20 @@ void sendMeasurements(float temp, float humidity, float pressure) {
   sprintf(tmp, "%08X", ESP.getChipId());
   HTTPClient http;
   String postUrl = "http://192.168.1.13:8000/v1/measurement/";
-  postUrl += String(tmp);
   String postData = "{\"temperature\":";
   postData += String(temp);
   postData += ",\"humidity\":";
   postData += String(humidity);
   postData += ",\"pressure\":";
   postData += String(pressure);
-  postData += "}";
+  postData += ",\"sensor\":\"";
+  postData += String(tmp);
+  postData += "\"}";
   http.begin(postUrl);
   http.addHeader("Content-Type", "application/json");
   int httpCode = http.POST(postData);
   if(204 != httpCode) {
+    Serial.printf("%d - ", httpCode);
     Serial.println("Could not send temperature to endpoint.");
   }
   http.end();
