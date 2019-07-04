@@ -7,11 +7,7 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 
-void(* resetFunc) (void) = 0;
-
 void indicateStillConnecting() {
-  pinMode(BUILTIN_LED, OUTPUT);
-
   digitalWrite(BUILTIN_LED, LOW);
   delay(100);
   digitalWrite(BUILTIN_LED, HIGH);
@@ -19,16 +15,14 @@ void indicateStillConnecting() {
 }
 
 void indicateConnected() {
-  pinMode(BUILTIN_LED, OUTPUT);
-
   digitalWrite(BUILTIN_LED, LOW);
   delay(2000);
   digitalWrite(BUILTIN_LED, HIGH);
 }
 
 void sendMeasurements(float temp, float humidity, float pressure) {
-  char tmp[9];
-  sprintf(tmp, "%08X", ESP.getChipId());
+  char chipid[9];
+  sprintf(chipid, "%08X", ESP.getChipId());
   HTTPClient http;
   String postUrl = "http://192.168.1.13:8000/v1/measurement/";
   String postData = "{\"temperature\":";
@@ -38,7 +32,7 @@ void sendMeasurements(float temp, float humidity, float pressure) {
   postData += ",\"pressure\":";
   postData += String(pressure);
   postData += ",\"sensor\":\"";
-  postData += String(tmp);
+  postData += String(chipid);
   postData += "\"}";
   http.begin(postUrl);
   http.addHeader("Content-Type", "application/json");
@@ -99,6 +93,8 @@ void measureAndShowValues() {
 }
 
 void setup() {
+  pinMode(BUILTIN_LED, OUTPUT);
+  
   int connectionTries = 0;
 
   // setup the serial interface with a specified baud rate
@@ -120,7 +116,7 @@ void setup() {
     if (connectionTries > 20) {
       Serial.println();
       Serial.printf("Could not connect after %d tries, resetting and starting from the beginning...", connectionTries);
-      resetFunc();
+      ESP.restart();
     }
   }
   indicateConnected();
