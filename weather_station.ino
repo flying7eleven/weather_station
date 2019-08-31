@@ -46,11 +46,10 @@ void sendMeasurements(float temp, float humidity, float pressure, float voltage)
 	postData += String(humidity);
 	postData += ",\"pressure\":";
 	postData += String(pressure);
-	postData += ",\"voltage\":\"";
-	postData += String(voltage);
 	postData += ",\"sensor\":\"";
 	postData += String(tmp);
 	postData += "\"}";
+	debugD("Sending JSON: %s", postData.c_str());
 	http.begin(client, postUrl);
 	http.addHeader("Content-Type", "application/json");
 	int httpCode = http.POST(postData);
@@ -81,15 +80,15 @@ void measureAndShowValues() {
 	// Get temperature
 	float measured_temp = bme.readTemperature();
 	measured_temp = measured_temp + 0.0f;
-	debugI("Temperature: %d °C", measured_temp);
+	debugI("Temperature: %.2f °C", measured_temp);
 
 	// Get humidity
 	float measured_humi = bme.readHumidity();
-	debugI("Humidity: %d %%", measured_humi);
+	debugI("Humidity: %.2f %%", measured_humi);
 
 	// Get pressure
 	float measured_pres = bme.readPressure() / 100.0f;
-	debugI("Pressure: %d hPa", measured_pres);
+	debugI("Pressure: %.2f hPa", measured_pres);
 
 	// Show the current battery voltage
 	float volts = measureBatteryVoltage();
