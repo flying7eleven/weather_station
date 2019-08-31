@@ -30,7 +30,7 @@ float measureBatteryVoltage() {
 	return raw * calib_factor / 1024.0f;
 }
 
-void sendMeasurements(float temp, float humidity, float pressure) {
+void sendMeasurements(float temp, float humidity, float pressure, float voltage) {
 	char tmp[9];
 	sprintf(tmp, "%08X", ESP.getChipId());
 	HTTPClient http;
@@ -41,6 +41,8 @@ void sendMeasurements(float temp, float humidity, float pressure) {
 	postData += String(humidity);
 	postData += ",\"pressure\":";
 	postData += String(pressure);
+	postData += ",\"voltage\":\"";
+	postData += String(voltage);
 	postData += ",\"sensor\":\"";
 	postData += String(tmp);
 	postData += "\"}";
@@ -93,7 +95,8 @@ void measureAndShowValues() {
 	Serial.print("hPa; ");
 
 	// Show the current battery voltage
-	Serial.print(measureBatteryVoltage(), 2);
+	float volts = measureBatteryVoltage();
+	Serial.print(volts, 2);
 	Serial.print("Volts; ");
 
 	// Show the ChipID / Sensor ID
@@ -103,7 +106,7 @@ void measureAndShowValues() {
 	Serial.println();
 
 	// send it
-	sendMeasurements(measured_temp, measured_humi, measured_pres);
+	sendMeasurements(measured_temp, measured_humi, measured_pres, volts);
 }
 
 void setup() {
