@@ -37,7 +37,9 @@ void sendMeasurements(float temp, float humidity, float pressure, float voltage)
 	char tmp[9];
 	sprintf(tmp, "%08X", ESP.getChipId());
 	HTTPClient http;
-	String postUrl = "https://weather.huetz.biz/v1/measurement/";
+	BearSSL::WiFiClientSecure client;
+	client.setInsecure();
+	String postUrl = ENDPOINT_BASE;
 	String postData = "{\"temperature\":";
 	postData += String(temp);
 	postData += ",\"humidity\":";
@@ -49,13 +51,14 @@ void sendMeasurements(float temp, float humidity, float pressure, float voltage)
 	postData += ",\"sensor\":\"";
 	postData += String(tmp);
 	postData += "\"}";
-	http.begin(postUrl);
+	http.begin(client, postUrl);
 	http.addHeader("Content-Type", "application/json");
 	int httpCode = http.POST(postData);
 	if (204 != httpCode) {
 		debugW("%d - Could not send temperature to endpoint.", httpCode);
 	}
 	http.end();
+	client.stop();
 }
 
 void measureAndShowValues() {
