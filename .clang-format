@@ -1,0 +1,10 @@
+---
+BasedOnStyle: LLVM
+ColumnLimit: 250
+Standard: Cpp11
+UseTab: Always
+TabWidth: 4
+IndentWidth: 4
+NamespaceIndentation: All
+AccessModifierOffset: -4
+AlwaysBreakTemplateDeclarations: true
