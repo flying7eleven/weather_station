@@ -1,7 +1,5 @@
-#define VERSION_MAJOR 0
-#define VERSION_MINOR 1
-#define VERSION_PATCH 0
 
+#include "weather_station/version.h"
 #include "weather_station/wifi.h"
 #include <Adafruit_BME280.h>
 #include <ESP8266WiFi.h>
