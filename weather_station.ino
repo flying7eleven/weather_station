@@ -4,8 +4,11 @@
 #include <Adafruit_BME280.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFi.h>
+#include <RemoteDebug.h>
 
 void (*resetFunc)(void) = 0;
+
+RemoteDebug Debug;
 
 void indicateStillConnecting() {
 	pinMode(BUILTIN_LED, OUTPUT);
@@ -34,7 +37,7 @@ void sendMeasurements(float temp, float humidity, float pressure, float voltage)
 	char tmp[9];
 	sprintf(tmp, "%08X", ESP.getChipId());
 	HTTPClient http;
-	String postUrl = "http://192.168.1.13:8000/v1/measurement/";
+	String postUrl = "https://weather.huetz.biz/v1/measurement/";
 	String postData = "{\"temperature\":";
 	postData += String(temp);
 	postData += ",\"humidity\":";
@@ -50,8 +53,7 @@ void sendMeasurements(float temp, float humidity, float pressure, float voltage)
 	http.addHeader("Content-Type", "application/json");
 	int httpCode = http.POST(postData);
 	if (204 != httpCode) {
-		Serial.printf("%d - ", httpCode);
-		Serial.println("Could not send temperature to endpoint.");
+		debugW("%d - Could not send temperature to endpoint.", httpCode);
 	}
 	http.end();
 }
@@ -61,7 +63,8 @@ void measureAndShowValues() {
 	bool bme_status;
 	bme_status = bme.begin(0x76); // address either 0x76 or 0x77
 	if (!bme_status) {
-		Serial.println("Could not find a valid BME280 sensor, check wiring!");
+		debugE("Could not find a valid BME280 sensor, check wiring!");
+		return;
 	}
 
 	bme.setSampling(Adafruit_BME280::MODE_FORCED,
@@ -75,35 +78,22 @@ void measureAndShowValues() {
 	// Get temperature
 	float measured_temp = bme.readTemperature();
 	measured_temp = measured_temp + 0.0f;
-	// print on serial monitor
-	Serial.print("Temp: ");
-	Serial.print(measured_temp);
-	Serial.print("°C; ");
+	debugI("Temperature: %d °C", measured_temp);
 
 	// Get humidity
 	float measured_humi = bme.readHumidity();
-	// print on serial monitor
-	Serial.print("Humidity: ");
-	Serial.print(measured_humi);
-	Serial.print("%; ");
+	debugI("Humidity: %d %%", measured_humi);
 
 	// Get pressure
-	float measured_pres = bme.readPressure() / 100.0F;
-	// print on serial monitor
-	Serial.print("Pressure: ");
-	Serial.print(measured_pres);
-	Serial.print("hPa; ");
+	float measured_pres = bme.readPressure() / 100.0f;
+	debugI("Pressure: %d hPa", measured_pres);
 
 	// Show the current battery voltage
 	float volts = measureBatteryVoltage();
-	Serial.print(volts, 2);
-	Serial.print("Volts; ");
+	debugI("Battery voltate: %.2f Volts", volts);
 
 	// Show the ChipID / Sensor ID
-	Serial.printf("ChipID: %08X;", ESP.getChipId());
-
-	// new line
-	Serial.println();
+	debugI("ChipID: %08X;", ESP.getChipId());
 
 	// send it
 	sendMeasurements(measured_temp, measured_humi, measured_pres, volts);
@@ -135,9 +125,14 @@ void setup() {
 		}
 	}
 	indicateConnected();
+
+	//
+	Debug.begin(WIFI_HOST);
+	Debug.showColors(true);
 }
 
 void loop() {
 	measureAndShowValues();
+	Debug.handle();
 	delay(5000);
 }
