@@ -24,6 +24,12 @@ void indicateConnected() {
   digitalWrite(BUILTIN_LED, HIGH);
 }
 
+float measureBatteryVoltage() {
+  const float calib_factor = 5.28f; // change this value to calibrate the battery voltage
+  unsigned long raw = analogRead(A0);
+  return raw * calib_factor/1024.0f;
+}
+
 void sendMeasurements(float temp, float humidity, float pressure) {
   char tmp[9];
   sprintf(tmp, "%08X", ESP.getChipId());
@@ -85,6 +91,10 @@ void measureAndShowValues() {
   Serial.print("Pressure: ");
   Serial.print(measured_pres);
   Serial.print("hPa; ");
+
+  // Show the current battery voltage
+  Serial.print(measureBatteryVoltage(), 2);
+  Serial.print("Volts; ");
 
   // Show the ChipID / Sensor ID
   Serial.printf("ChipID: %08X;", ESP.getChipId());
