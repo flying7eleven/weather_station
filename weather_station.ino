@@ -76,7 +76,7 @@ void sendMeasurements(float temp, float humidity, float pressure, float voltage)
 	http.addHeader("Content-Type", "application/json");
 	int httpCode = http.POST(postData);
 	if (204 != httpCode) {
-		debugW("%d - Could not send temperature to endpoint.", httpCode);
+		debugE("%d - Could not send temperature to endpoint.", httpCode);
 	}
 	http.end();
 	client.stop();
@@ -102,22 +102,22 @@ void measureAndShowValues() {
 	// Get temperature
 	float measured_temp = bme.readTemperature();
 	measured_temp = measured_temp + 0.0f;
-	debugI("Temperature: %.2f °C", measured_temp);
+	debugD("Temperature: %.2f °C", measured_temp);
 
 	// Get humidity
 	float measured_humi = bme.readHumidity();
-	debugI("Humidity: %.2f %%", measured_humi);
+	debugD("Humidity: %.2f %%", measured_humi);
 
 	// Get pressure
 	float measured_pres = bme.readPressure() / 100.0f;
-	debugI("Pressure: %.2f hPa", measured_pres);
+	debugD("Pressure: %.2f hPa", measured_pres);
 
 	// Show the current battery voltage
 	float volts = measureBatteryVoltage();
-	debugI("Battery voltate: %.2f Volts", volts);
+	debugD("Battery voltate: %.2f Volts", volts);
 
 	// Show the ChipID / Sensor ID
-	debugI("ChipID: %08X;", ESP.getChipId());
+	debugD("ChipID: %08X;", ESP.getChipId());
 
 	// send it
 	sendMeasurements(measured_temp, measured_humi, measured_pres, volts);
