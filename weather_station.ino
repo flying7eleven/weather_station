@@ -28,7 +28,7 @@ void indicateConnected() {
 }
 
 float measureBatteryVoltage() {
-	const float calib_factor = 5.28f; // change this value to calibrate the battery voltage
+	const float calib_factor = 5.32f; // change this value to calibrate the battery voltage
 	unsigned long raw = analogRead(A0);
 	return raw * calib_factor / 1024.0f;
 }
