@@ -70,7 +70,7 @@ void sendMeasurements(float temp, float humidity, float pressure, float voltage)
 	postData += String(humidity);
 	postData += ",\"pressure\":";
 	postData += String(pressure);
-	postData += ",\"voltage\":\"";
+	postData += ",\"voltage\":";
 	postData += String(voltage);
 	postData += ",\"sensor\":\"";
 	postData += String(tmp);
