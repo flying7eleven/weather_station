@@ -27,6 +27,7 @@
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFi.h>
 #include <RemoteDebug.h>
+#include <pins_arduino.h>
 
 void (*resetFunc)(void) = 0;
 
@@ -50,9 +51,10 @@ void indicateConnected() {
 }
 
 float measureBatteryVoltage() {
-	const float calib_factor = 5.32f; // change this value to calibrate the battery voltage
-	unsigned long raw = analogRead(A0);
-	return raw * calib_factor / 1024.0f;
+	const float calib_factor = 5.32f;
+	unsigned long raw = analogRead(PIN_A0);
+	// return raw * calib_factor / 1024.0f;
+	return raw;
 }
 
 void sendMeasurements(float temp, float humidity, float pressure, float voltage) {
@@ -68,6 +70,8 @@ void sendMeasurements(float temp, float humidity, float pressure, float voltage)
 	postData += String(humidity);
 	postData += ",\"pressure\":";
 	postData += String(pressure);
+	postData += ",\"voltage\":\"";
+	postData += String(voltage);
 	postData += ",\"sensor\":\"";
 	postData += String(tmp);
 	postData += "\"}";
