@@ -50,14 +50,14 @@ void indicateConnected() {
 	digitalWrite(BUILTIN_LED, HIGH);
 }
 
-float measureBatteryVoltage() {
+float measureRawBatteryVoltage() {
 	const float calib_factor = 5.32f;
 	unsigned long raw = analogRead(PIN_A0);
 	// return raw * calib_factor / 1024.0f;
 	return raw;
 }
 
-void sendMeasurements(float temp, float humidity, float pressure, float voltage) {
+void sendMeasurements(float temp, float humidity, float pressure, float raw_voltage) {
 	char tmp[9];
 	sprintf(tmp, "%08X", ESP.getChipId());
 	HTTPClient http;
@@ -70,8 +70,8 @@ void sendMeasurements(float temp, float humidity, float pressure, float voltage)
 	postData += String(humidity);
 	postData += ",\"pressure\":";
 	postData += String(pressure);
-	postData += ",\"voltage\":";
-	postData += String(voltage);
+	postData += ",\"raw_voltage\":";
+	postData += String(raw_voltage);
 	postData += ",\"sensor\":\"";
 	postData += String(tmp);
 	postData += "\"}";
@@ -117,14 +117,14 @@ void measureAndShowValues() {
 	debugD("Pressure: %.2f hPa", measured_pres);
 
 	// Show the current battery voltage
-	float volts = measureBatteryVoltage();
-	debugD("Battery voltate: %.2f Volts", volts);
+	float raw_voltage = measureRawBatteryVoltage();
+	debugD("Raw battery voltage value: %.2f", raw_voltage);
 
 	// Show the ChipID / Sensor ID
 	debugD("ChipID: %08X;", ESP.getChipId());
 
 	// send it
-	sendMeasurements(measured_temp, measured_humi, measured_pres, volts);
+	sendMeasurements(measured_temp, measured_humi, measured_pres, raw_voltage);
 }
 
 void setup() {
