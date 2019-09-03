@@ -144,8 +144,8 @@ void measureAndShowValues() {
 	debugD("ChipID: %08X;", ESP.getChipId());
 
 	// ensure that we do not send inaccurate measurements which are caused by a too low voltage
-	if (MIN_RAW_VOLTAGE <= raw_voltage) {
-		debugW("Not sending last measurement since the raw_voltage droped to or below %.2f", raw_voltage);
+	if (MIN_RAW_VOLTAGE >= raw_voltage) {
+		debugW("Not sending last measurement since the raw_voltage (%.2f) droped to or below %.2f", raw_voltage, MIN_RAW_VOLTAGE);
 		return;
 	}
 
