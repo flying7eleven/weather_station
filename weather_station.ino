@@ -29,9 +29,13 @@
 #include <RemoteDebug.h>
 #include <common.h>
 #include <pins_arduino.h>
+
 void (*resetFunc)(void) = 0;
+
 const uint16_t MAX_RAW_VOLTAGE = 818;
 const uint16_t MIN_RAW_VOLTAGE = 601;
+
+const int sleepSeconds = 5;
 
 RemoteDebug Debug;
 
@@ -53,6 +57,33 @@ void indicateConnected() {
 }
 
 unsigned long int measureRawBatteryVoltage() { return analogRead(A0); }
+
+void indicateWakeup() {
+	pinMode(LED_BUILTIN, OUTPUT);
+
+	digitalWrite(LED_BUILTIN, LOW);
+	delay(100);
+	digitalWrite(LED_BUILTIN, HIGH);
+	delay(100);
+
+	digitalWrite(LED_BUILTIN, LOW);
+	delay(100);
+	digitalWrite(LED_BUILTIN, HIGH);
+	delay(100);
+
+	digitalWrite(LED_BUILTIN, LOW);
+	delay(2000);
+	digitalWrite(LED_BUILTIN, HIGH);
+
+	digitalWrite(LED_BUILTIN, LOW);
+	delay(100);
+	digitalWrite(LED_BUILTIN, HIGH);
+	delay(100);
+
+	digitalWrite(LED_BUILTIN, LOW);
+	delay(100);
+	digitalWrite(LED_BUILTIN, HIGH);
+}
 
 float calculateBatteryChargeInPercent(const float raw_voltage) {
 	const float max_range = MAX_RAW_VOLTAGE - MIN_RAW_VOLTAGE;
@@ -159,6 +190,9 @@ void setup() {
 	// setup the serial interface with a specified baud rate
 	Serial.begin(115200);
 
+	// connect D0 to RST to ensure we can wakeup after deep sleep
+	pinMode(D0, WAKEUP_PULLUP);
+
 	// just print a simple header
 	Serial.println();
 	Serial.printf("Solar Powered Weather Station %d.%d.%d - Written by Tim Huetz. All rights reserved.\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
@@ -183,10 +217,21 @@ void setup() {
 	//
 	Debug.begin(WIFI_HOST);
 	Debug.showColors(true);
+
+	// indicate that we woke up (can be removed in non-debug mode)
+	indicateWakeup();
+
+	// handle all request by an external debugger
+	Debug.handle();
+
+	// do the actual measurements and send the values to a server
+	measureAndShowValues();
+
+	// go into deep sleep mode to save energy
+	ESP.deepSleep(sleepSeconds * 1000000);
 }
 
 void loop() {
-	measureAndShowValues();
-	Debug.handle();
-	delay(5000);
+	// since we use deep-sleep, we will never reach this place
+	// everything has to be done in the setup method
 }
