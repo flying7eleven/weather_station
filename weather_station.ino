@@ -30,6 +30,8 @@
 #include <pins_arduino.h>
 
 void (*resetFunc)(void) = 0;
+const uint16_t MAX_RAW_VOLTAGE = 818;
+const uint16_t MIN_RAW_VOLTAGE = 601;
 
 RemoteDebug Debug;
 
@@ -122,6 +124,12 @@ void measureAndShowValues() {
 
 	// Show the ChipID / Sensor ID
 	debugD("ChipID: %08X;", ESP.getChipId());
+
+	// ensure that we do not send inaccurate measurements which are caused by a too low voltage
+	if (MIN_RAW_VOLTAGE <= raw_voltage) {
+		debugW("Not sending last measurement since the raw_voltage droped to or below %.2f", raw_voltage);
+		return;
+	}
 
 	// send it
 	sendMeasurements(measured_temp, measured_humi, measured_pres, raw_voltage);
