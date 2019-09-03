@@ -72,6 +72,9 @@ float calculateBatteryChargeInPercent(const float raw_voltage) {
 void sendMeasurements(float temp, float humidity, float pressure, float raw_voltage) {
 	char tmp[9];
 	sprintf(tmp, "%08X", ESP.getChipId());
+	char version_str[9]; // would be able to store "10.10.10\0" so should be enough
+	memset(version_str, 0, sizeof(char) * 9);
+	sprintf(tmp, "%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 	float charge = calculateBatteryChargeInPercent(raw_voltage);
 	HTTPClient http;
 	BearSSL::WiFiClientSecure client;
@@ -89,6 +92,8 @@ void sendMeasurements(float temp, float humidity, float pressure, float raw_volt
 	postData += String(charge);
 	postData += ",\"sensor\":\"";
 	postData += String(tmp);
+	postData += ",\"firmware_version\":\"";
+	postData += String(version_str);
 	postData += "\"}";
 	debugD("Sending JSON: %s", postData.c_str());
 	http.begin(client, postUrl);
