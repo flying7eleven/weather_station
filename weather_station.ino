@@ -52,16 +52,17 @@ void indicateConnected() {
 	digitalWrite(BUILTIN_LED, HIGH);
 }
 
-float measureRawBatteryVoltage() {
-	const float calib_factor = 5.32f;
-	unsigned long raw = analogRead(PIN_A0);
-	// return raw * calib_factor / 1024.0f;
-	return raw;
+unsigned long int measureRawBatteryVoltage() { return analogRead(PIN_A0); }
+
+float calculateBatteryChargeInPercent(const float raw_voltage) {
+	float a = MAX_RAW_VOLTAGE - MIN_RAW_VOLTAGE;
+	return ((raw_voltage - MIN_RAW_VOLTAGE) / a) * 100.0f;
 }
 
 void sendMeasurements(float temp, float humidity, float pressure, float raw_voltage) {
 	char tmp[9];
 	sprintf(tmp, "%08X", ESP.getChipId());
+	float charge = calculateBatteryChargeInPercent(raw_voltage);
 	HTTPClient http;
 	BearSSL::WiFiClientSecure client;
 	client.setInsecure();
@@ -74,6 +75,8 @@ void sendMeasurements(float temp, float humidity, float pressure, float raw_volt
 	postData += String(pressure);
 	postData += ",\"raw_voltage\":";
 	postData += String(raw_voltage);
+	postData += ",\"charge\":";
+	postData += String(charge);
 	postData += ",\"sensor\":\"";
 	postData += String(tmp);
 	postData += "\"}";
