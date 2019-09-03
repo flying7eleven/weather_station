@@ -55,8 +55,18 @@ void indicateConnected() {
 unsigned long int measureRawBatteryVoltage() { return analogRead(PIN_A0); }
 
 float calculateBatteryChargeInPercent(const float raw_voltage) {
-	float a = MAX_RAW_VOLTAGE - MIN_RAW_VOLTAGE;
-	return ((raw_voltage - MIN_RAW_VOLTAGE) / a) * 100.0f;
+	const float max_range = MAX_RAW_VOLTAGE - MIN_RAW_VOLTAGE;
+	float percentage = ((raw_voltage - MIN_RAW_VOLTAGE) / max_range) * 100.0f;
+
+	if (percentage > 100.0f) {
+		percentage = 100.0f;
+	}
+
+	if (percentage < 0.0f) {
+		percentage = 0.0f;
+	}
+
+	return percentage;
 }
 
 void sendMeasurements(float temp, float humidity, float pressure, float raw_voltage) {
