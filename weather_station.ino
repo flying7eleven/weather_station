@@ -36,20 +36,20 @@ const uint16_t MIN_RAW_VOLTAGE = 601;
 RemoteDebug Debug;
 
 void indicateStillConnecting() {
-	pinMode(BUILTIN_LED, OUTPUT);
+	pinMode(LED_BUILTIN, OUTPUT);
 
-	digitalWrite(BUILTIN_LED, LOW);
+	digitalWrite(LED_BUILTIN, LOW);
 	delay(100);
-	digitalWrite(BUILTIN_LED, HIGH);
+	digitalWrite(LED_BUILTIN, HIGH);
 	delay(100);
 }
 
 void indicateConnected() {
-	pinMode(BUILTIN_LED, OUTPUT);
+	pinMode(LED_BUILTIN, OUTPUT);
 
-	digitalWrite(BUILTIN_LED, LOW);
+	digitalWrite(LED_BUILTIN, LOW);
 	delay(2000);
-	digitalWrite(BUILTIN_LED, HIGH);
+	digitalWrite(LED_BUILTIN, HIGH);
 }
 
 unsigned long int measureRawBatteryVoltage() { return analogRead(PIN_A0); }
