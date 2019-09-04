@@ -26,7 +26,6 @@
 #include <Adafruit_BME280.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFi.h>
-#include <RemoteDebug.h>
 #include <common.h>
 #include <pins_arduino.h>
 
@@ -36,8 +35,6 @@ const uint16_t MAX_RAW_VOLTAGE = 818;
 const uint16_t MIN_RAW_VOLTAGE = 601;
 
 const int sleepSeconds = 5;
-
-RemoteDebug Debug;
 
 void indicateStillConnecting() {
 	pinMode(LED_BUILTIN, OUTPUT);
@@ -126,12 +123,12 @@ void sendMeasurements(float temp, float humidity, float pressure, float raw_volt
 	postData += "\",\"firmware_version\":\"";
 	postData += String(version_str);
 	postData += "\"}";
-	debugD("Sending JSON: %s", postData.c_str());
 	http.begin(client, postUrl);
 	http.addHeader("Content-Type", "application/json");
 	int httpCode = http.POST(postData);
 	if (204 != httpCode) {
-		debugE("%d - Could not send temperature to endpoint.", httpCode);
+		Serial.printf("%d - Could not send temperature to endpoint.", httpCode);
+		Serial.println();
 	}
 	http.end();
 	client.stop();
@@ -142,7 +139,8 @@ void measureAndShowValues() {
 	bool bme_status;
 	bme_status = bme.begin(0x76); // address either 0x76 or 0x77
 	if (!bme_status) {
-		debugE("Could not find a valid BME280 sensor, check wiring!");
+		Serial.printf("Could not find a valid BME280 sensor, check wiring!");
+		Serial.println();
 		return;
 	}
 
@@ -154,29 +152,16 @@ void measureAndShowValues() {
 
 	bme.takeForcedMeasurement();
 
-	// Get temperature
-	float measured_temp = bme.readTemperature();
-	measured_temp = measured_temp + 0.0f;
-	debugD("Temperature: %.2f °C", measured_temp);
-
-	// Get humidity
-	float measured_humi = bme.readHumidity();
-	debugD("Humidity: %.2f %%", measured_humi);
-
-	// Get pressure
-	float measured_pres = bme.readPressure() / 100.0f;
-	debugD("Pressure: %.2f hPa", measured_pres);
-
-	// Show the current battery voltage
-	float raw_voltage = measureRawBatteryVoltage();
-	debugD("Raw battery voltage value: %.2f", raw_voltage);
-
-	// Show the ChipID / Sensor ID
-	debugD("ChipID: %08X;", ESP.getChipId());
+	// get the measurements
+	const float measured_temp = bme.readTemperature();
+	const float measured_humi = bme.readHumidity();
+	const float measured_pres = bme.readPressure() / 100.0f;
+	const float raw_voltage = measureRawBatteryVoltage();
 
 	// ensure that we do not send inaccurate measurements which are caused by a too low voltage
 	if (MIN_RAW_VOLTAGE >= raw_voltage) {
-		debugW("Not sending last measurement since the raw_voltage (%.2f) droped to or below %.2f", raw_voltage, MIN_RAW_VOLTAGE);
+		Serial.printf("Not sending last measurement since the raw_voltage (%.2f) droped to or below %.2f", raw_voltage, MIN_RAW_VOLTAGE);
+		Serial.println();
 		return;
 	}
 
@@ -214,15 +199,8 @@ void setup() {
 	}
 	indicateConnected();
 
-	//
-	Debug.begin(WIFI_HOST);
-	Debug.showColors(true);
-
 	// indicate that we woke up (can be removed in non-debug mode)
 	indicateWakeup();
-
-	// handle all request by an external debugger
-	Debug.handle();
 
 	// do the actual measurements and send the values to a server
 	measureAndShowValues();
