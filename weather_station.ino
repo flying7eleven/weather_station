@@ -27,8 +27,8 @@
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFi.h>
 #include <RemoteDebug.h>
+#include <common.h>
 #include <pins_arduino.h>
-
 void (*resetFunc)(void) = 0;
 const uint16_t MAX_RAW_VOLTAGE = 818;
 const uint16_t MIN_RAW_VOLTAGE = 601;
@@ -52,7 +52,7 @@ void indicateConnected() {
 	digitalWrite(LED_BUILTIN, HIGH);
 }
 
-unsigned long int measureRawBatteryVoltage() { return analogRead(PIN_A0); }
+unsigned long int measureRawBatteryVoltage() { return analogRead(A0); }
 
 float calculateBatteryChargeInPercent(const float raw_voltage) {
 	const float max_range = MAX_RAW_VOLTAGE - MIN_RAW_VOLTAGE;
