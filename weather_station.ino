@@ -58,9 +58,13 @@ float calculateBatteryChargeInPercent(const float raw_voltage) {
 void sendMeasurements(float temp, float humidity, float pressure, float raw_voltage) {
 	char tmp[9];
 	sprintf(tmp, "%08X", ESP.getChipId());
-	char version_str[9]; // would be able to store "10.10.10\0" so should be enough
-	memset(version_str, 0, sizeof(char) * 9);
+	char version_str[13]; // would be able to store "10.10.10-dev\0" so should be enough
+	memset(version_str, 0, sizeof(char) * 13);
+#if !defined(NDEBUG)
+	sprintf(version_str, "%d.%d.%d-dev", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+#else
 	sprintf(version_str, "%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+#endif
 	float charge = calculateBatteryChargeInPercent(raw_voltage);
 	HTTPClient http;
 	BearSSL::WiFiClientSecure client;
