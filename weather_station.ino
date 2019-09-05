@@ -171,6 +171,11 @@ void setup() {
 	// do the actual measurements and send the values to a server
 	measureAndShowValues();
 
+#if !defined(NDEBUG)
+	Serial.printf("Going to sleep for %d seconds now!", sleepSeconds);
+	Serial.println();
+#endif
+
 	// go into deep sleep mode to save energy
 	ESP.deepSleep(sleepSeconds * 1000000);
 }
