@@ -36,51 +36,7 @@ const uint16_t MIN_RAW_VOLTAGE = 601;
 
 const int sleepSeconds = 5;
 
-void indicateStillConnecting() {
-	pinMode(LED_BUILTIN, OUTPUT);
-
-	digitalWrite(LED_BUILTIN, LOW);
-	delay(100);
-	digitalWrite(LED_BUILTIN, HIGH);
-	delay(100);
-}
-
-void indicateConnected() {
-	pinMode(LED_BUILTIN, OUTPUT);
-
-	digitalWrite(LED_BUILTIN, LOW);
-	delay(2000);
-	digitalWrite(LED_BUILTIN, HIGH);
-}
-
 unsigned long int measureRawBatteryVoltage() { return analogRead(A0); }
-
-void indicateWakeup() {
-	pinMode(LED_BUILTIN, OUTPUT);
-
-	digitalWrite(LED_BUILTIN, LOW);
-	delay(100);
-	digitalWrite(LED_BUILTIN, HIGH);
-	delay(100);
-
-	digitalWrite(LED_BUILTIN, LOW);
-	delay(100);
-	digitalWrite(LED_BUILTIN, HIGH);
-	delay(100);
-
-	digitalWrite(LED_BUILTIN, LOW);
-	delay(2000);
-	digitalWrite(LED_BUILTIN, HIGH);
-
-	digitalWrite(LED_BUILTIN, LOW);
-	delay(100);
-	digitalWrite(LED_BUILTIN, HIGH);
-	delay(100);
-
-	digitalWrite(LED_BUILTIN, LOW);
-	delay(100);
-	digitalWrite(LED_BUILTIN, HIGH);
-}
 
 float calculateBatteryChargeInPercent(const float raw_voltage) {
 	const float max_range = MAX_RAW_VOLTAGE - MIN_RAW_VOLTAGE;
@@ -189,7 +145,6 @@ void setup() {
 	WiFi.begin(WIFI_SSID, WIFI_PASS);
 	while (WiFi.status() != WL_CONNECTED) {
 		connectionTries++;
-		indicateStillConnecting();
 		delay(500);
 		if (connectionTries > 20) {
 			Serial.println();
@@ -197,10 +152,6 @@ void setup() {
 			resetFunc();
 		}
 	}
-	indicateConnected();
-
-	// indicate that we woke up (can be removed in non-debug mode)
-	indicateWakeup();
 
 	// do the actual measurements and send the values to a server
 	measureAndShowValues();
