@@ -34,7 +34,7 @@
 void (*resetFunc)(void) = 0;
 
 const uint16_t MAX_RAW_VOLTAGE = 810;
-const uint16_t MIN_RAW_VOLTAGE = 601;
+const uint16_t MIN_RAW_VOLTAGE = 600;
 
 const int sleepSeconds = 5;
 
