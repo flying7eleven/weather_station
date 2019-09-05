@@ -21,6 +21,8 @@
  * SOFTWARE.
  */
 
+// #define NDEBUG // if defined, we run in release mode
+
 #include "weather_station/version.h"
 #include "weather_station/wifi.h"
 #include <Adafruit_BME280.h>
@@ -82,10 +84,12 @@ void sendMeasurements(float temp, float humidity, float pressure, float raw_volt
 	http.begin(client, postUrl);
 	http.addHeader("Content-Type", "application/json");
 	int httpCode = http.POST(postData);
+#if !defined(NDEBUG)
 	if (204 != httpCode) {
 		Serial.printf("%d - Could not send temperature to endpoint.", httpCode);
 		Serial.println();
 	}
+#endif
 	http.end();
 	client.stop();
 }
@@ -95,8 +99,10 @@ void measureAndShowValues() {
 	bool bme_status;
 	bme_status = bme.begin(0x76); // address either 0x76 or 0x77
 	if (!bme_status) {
+#if !defined(NDEBUG)
 		Serial.printf("Could not find a valid BME280 sensor, check wiring!");
 		Serial.println();
+#endif
 		return;
 	}
 
@@ -116,8 +122,10 @@ void measureAndShowValues() {
 
 	// ensure that we do not send inaccurate measurements which are caused by a too low voltage
 	if (MIN_RAW_VOLTAGE >= raw_voltage) {
+#if !defined(NDEBUG)
 		Serial.printf("Not sending last measurement since the raw_voltage (%.2f) droped to or below %.2f", raw_voltage, MIN_RAW_VOLTAGE);
 		Serial.println();
+#endif
 		return;
 	}
 
@@ -128,17 +136,19 @@ void measureAndShowValues() {
 void setup() {
 	int connectionTries = 0;
 
-	// setup the serial interface with a specified baud rate
-	Serial.begin(115200);
-
 	// connect D0 to RST to ensure we can wakeup after deep sleep
 	pinMode(D0, WAKEUP_PULLUP);
+
+#if !defined(NDEBUG)
+	// setup the serial interface with a specified baud rate
+	Serial.begin(115200);
 
 	// just print a simple header
 	Serial.println();
 	Serial.printf("Solar Powered Weather Station %d.%d.%d - Written by Tim Huetz. All rights reserved.\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 	Serial.printf("================================================================================");
 	Serial.println();
+#endif
 
 	// try to connect to the wifi
 	WiFi.hostname(WIFI_HOST);
@@ -147,8 +157,10 @@ void setup() {
 		connectionTries++;
 		delay(500);
 		if (connectionTries > 20) {
+#if !defined(NDEBUG)
 			Serial.println();
 			Serial.printf("Could not connect after %d tries, resetting and starting from the beginning...", connectionTries);
+#endif
 			resetFunc();
 		}
 	}
