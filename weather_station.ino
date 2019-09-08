@@ -23,6 +23,7 @@
 
 // #define NDEBUG // if defined, we run in release mode
 
+#include "weather_station/root_cert.h"
 #include "weather_station/version.h"
 #include "weather_station/wifi.h"
 #include <Adafruit_BME280.h>
@@ -55,8 +56,15 @@ float calculateBatteryChargeInPercent(const float raw_voltage) {
 }
 
 void sendMeasurements(float temp, float humidity, float pressure, float raw_voltage) {
+	const String postUrl = ENDPOINT_BASE;
+	HTTPClient http;
+	BearSSL::WiFiClientSecure client;
+
+	// get the id of the chip for authentication purposes
 	char tmp[9];
 	sprintf(tmp, "%08X", ESP.getChipId());
+
+	// get the version of the current firmare
 	char version_str[13]; // would be able to store "10.10.10-dev\0" so should be enough
 	memset(version_str, 0, sizeof(char) * 13);
 #if !defined(NDEBUG)
@@ -64,11 +72,22 @@ void sendMeasurements(float temp, float humidity, float pressure, float raw_volt
 #else
 	sprintf(version_str, "%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 #endif
-	float charge = calculateBatteryChargeInPercent(raw_voltage);
-	HTTPClient http;
-	BearSSL::WiFiClientSecure client;
-	client.setInsecure();
-	String postUrl = ENDPOINT_BASE;
+
+	// be sure that the CA certificate could be loaded successfully, otherwise we have to stop here
+	const bool caCertSuccessfullyLoaded = client.setCACert_P(caCert, caCertLen);
+	if (!caCertSuccessfullyLoaded) {
+#if !defined(NDEBUG)
+		Serial.println("Failed to load root CA certificate!");
+#endif
+		while (true) {
+			yield();
+		}
+	}
+
+	//
+	const float charge = calculateBatteryChargeInPercent(raw_voltage);
+
+	//
 	String postData = "{\"temperature\":";
 	postData += String(temp);
 	postData += ",\"humidity\":";
@@ -84,15 +103,19 @@ void sendMeasurements(float temp, float humidity, float pressure, float raw_volt
 	postData += "\",\"firmware_version\":\"";
 	postData += String(version_str);
 	postData += "\"}";
+
+	//
 	http.begin(client, postUrl);
 	http.addHeader("Content-Type", "application/json");
-	int httpCode = http.POST(postData);
+	const int httpCode = http.POST(postData);
 #if !defined(NDEBUG)
 	if (204 != httpCode) {
 		Serial.printf("%d - Could not send temperature to endpoint.", httpCode);
 		Serial.println();
 	}
 #endif
+
+	//
 	http.end();
 	client.stop();
 }
