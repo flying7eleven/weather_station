@@ -55,6 +55,34 @@ float calculateBatteryChargeInPercent(const float raw_voltage) {
 	return percentage;
 }
 
+void updateLocalTime() {
+	const long int localTimeZone = 8 * 3600;
+	const int daylightOffsetInSeconds = 0;
+
+	// try to update the time of the board using some NTP servers
+#if !defined(NDEBUG)
+	Serial.print("Setting time using NTP");
+#endif
+	configTime(localTimeZone, daylightOffsetInSeconds, "pool.ntp.org", "time.nist.gov");
+	time_t now = time(nullptr);
+	while (now < 8 * 3600 * 2) {
+		delay(500);
+		Serial.print(".");
+		now = time(nullptr);
+	}
+#if !defined(NDEBUG)
+	Serial.println("");
+#endif
+
+// if we are in debug mode, show the updated local time in a human readable form
+#if !defined(NDEBUG)
+	struct tm timeinfo;
+	gmtime_r(&now, &timeinfo);
+	Serial.print("Current time: ");
+	Serial.print(asctime(&timeinfo));
+#endif
+}
+
 void sendMeasurements(float temp, float humidity, float pressure, float raw_voltage) {
 	const String postUrl = ENDPOINT_BASE;
 	HTTPClient http;
@@ -190,6 +218,9 @@ void setup() {
 			resetFunc();
 		}
 	}
+
+	// ensure the local time is up to date (required for SSL cert validation)
+	updateLocalTime();
 
 	// do the actual measurements and send the values to a server
 	measureAndShowValues();
