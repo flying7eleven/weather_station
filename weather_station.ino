@@ -31,8 +31,6 @@
 #include <ESP8266WiFi.h>
 #include <pins_arduino.h>
 
-void (*resetFunc)(void) = 0;
-
 const uint16_t MAX_RAW_VOLTAGE = 810;
 const uint16_t MIN_RAW_VOLTAGE = 600;
 const uint8_t MAX_WIFI_CONNECTION_TRIES = 20;
@@ -215,7 +213,7 @@ void setup() {
 			Serial.println();
 			Serial.printf("Could not connect after %d tries, resetting and starting from the beginning...", connectionTries);
 #endif
-			resetFunc();
+			ESP.reset();
 		}
 	}
 
