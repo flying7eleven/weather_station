@@ -35,8 +35,8 @@ void (*resetFunc)(void) = 0;
 
 const uint16_t MAX_RAW_VOLTAGE = 810;
 const uint16_t MIN_RAW_VOLTAGE = 600;
-
-const int sleepSeconds = 600;
+const uint8_t MAX_WIFI_CONNECTION_TRIES = 20;
+const int32_t DEEP_SLEEP_SECONDS = 600;
 
 unsigned long int measureRawBatteryVoltage() { return analogRead(A0); }
 
@@ -210,7 +210,7 @@ void setup() {
 	while (WiFi.status() != WL_CONNECTED) {
 		connectionTries++;
 		delay(500);
-		if (connectionTries > 20) {
+		if (connectionTries > MAX_WIFI_CONNECTION_TRIES) {
 #if !defined(NDEBUG)
 			Serial.println();
 			Serial.printf("Could not connect after %d tries, resetting and starting from the beginning...", connectionTries);
@@ -226,12 +226,12 @@ void setup() {
 	measureAndShowValues();
 
 #if !defined(NDEBUG)
-	Serial.printf("Going to sleep for %d seconds now!", sleepSeconds);
+	Serial.printf("Going to sleep for %d seconds now!", DEEP_SLEEP_SECONDS);
 	Serial.println();
 #endif
 
 	// go into deep sleep mode to save energy
-	ESP.deepSleep(sleepSeconds * 1000000);
+	ESP.deepSleep(DEEP_SLEEP_SECONDS * 1000000);
 }
 
 void loop() {
