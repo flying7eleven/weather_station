@@ -23,6 +23,7 @@
 
 // #define NDEBUG // if defined, we run in release mode
 
+#include "weather_station/SecureOTA.h"
 #include "weather_station/root_cert.h"
 #include "weather_station/version.h"
 #include "weather_station/wifi.h"
