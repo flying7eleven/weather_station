@@ -29,6 +29,7 @@
 #include "weather_station/version.h"
 #include "weather_station/wifi.h"
 #include <Adafruit_BME280.h>
+#include <Arduino_JSON.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFi.h>
 #include <pins_arduino.h>
@@ -121,21 +122,23 @@ void sendMeasurements(float temp, float humidity, float pressure, float raw_volt
 	const float charge = calculateBatteryChargeInPercent(raw_voltage);
 
 	//
-	String postData = "{\"temperature\":";
-	postData += String(temp);
-	postData += ",\"humidity\":";
-	postData += String(humidity);
-	postData += ",\"pressure\":";
-	postData += String(pressure);
-	postData += ",\"raw_voltage\":";
-	postData += String(raw_voltage);
-	postData += ",\"charge\":";
-	postData += String(charge);
-	postData += ",\"sensor\":\"";
-	postData += String(tmp);
-	postData += "\",\"firmware_version\":\"";
-	postData += String(version_str);
-	postData += "\"}";
+	JSONVar jsonData;
+
+	//
+	jsonData["temperature"] = temp;
+	jsonData["humidity"] = humidity;
+	jsonData["pressure"] = pressure;
+	jsonData["raw_voltage"] = raw_voltage;
+	jsonData["charge"] = charge;
+	jsonData["sensor"] = tmp;
+	jsonData["firmware_version"] = version_str;
+
+	//
+	String postData = JSON.stringify(jsonData);
+#if !defined(NDEBUG)
+	Serial.printf("%s", postData.c_str());
+	Serial.println();
+#endif
 
 	//
 	http.begin(client, postUrl);
