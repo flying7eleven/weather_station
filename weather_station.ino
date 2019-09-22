@@ -21,8 +21,8 @@
  * SOFTWARE.
  */
 
-// #define NDEBUG // if defined, we run in release mode
-#define FORCE_HARD_RESTART_INSTEAD_DEEPSLEEP
+#define NDEBUG // if defined, we run in release mode
+// #define FORCE_HARD_RESTART_INSTEAD_DEEPSLEEP
 
 #include "weather_station/SecureOTA.h"
 #include "weather_station/root_cert.h"
