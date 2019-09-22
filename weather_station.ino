@@ -225,6 +225,9 @@ void setup() {
 	// do the actual measurements and send the values to a server
 	measureAndShowValues();
 
+	// disconnect from the network before proceeding
+	WiFi.disconnect(true);
+
 #if !defined(NDEBUG)
 	Serial.printf("Going to sleep for %d seconds now!", DEEP_SLEEP_SECONDS);
 	Serial.println();
