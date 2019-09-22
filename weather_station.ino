@@ -91,6 +91,7 @@ void sendMeasurements(float temp, float humidity, float pressure, float raw_volt
 	const String postUrl = ENDPOINT_BASE;
 	HTTPClient http;
 	BearSSL::WiFiClientSecure client;
+	client.setInsecure();
 
 	// get the id of the chip for authentication purposes
 	char tmp[9];
