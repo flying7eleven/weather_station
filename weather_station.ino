@@ -56,14 +56,14 @@ float calculateBatteryChargeInPercent(const float raw_voltage) {
 }
 
 void updateLocalTime() {
-	const long int localTimeZone = 1 * 3600; // GMT+1
+	const long int localTimeZone = 1 * 3600;	  // GMT+1
 	const int daylightOffsetInSeconds = 1 * 3600; // if DST, add +1 to timezone
 
 	// try to update the time of the board using some NTP servers
 #if !defined(NDEBUG)
 	Serial.print("Setting time using NTP");
 #endif
-	configTime(localTimeZone, daylightOffsetInSeconds, "pool.ntp.org", "time.nist.gov");
+	configTime(localTimeZone, daylightOffsetInSeconds, "0.europe.pool.ntp.org", "1.europe.pool.ntp.org", "2.europe.pool.ntp.org");
 	time_t now = time(nullptr);
 	while (now < 8 * 3600 * 2) {
 		delay(500);
