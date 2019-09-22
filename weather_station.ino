@@ -22,6 +22,7 @@
  */
 
 // #define NDEBUG // if defined, we run in release mode
+#define FORCE_HARD_RESTART_INSTEAD_DEEPSLEEP
 
 #include "weather_station/SecureOTA.h"
 #include "weather_station/root_cert.h"
@@ -229,8 +230,12 @@ void setup() {
 	Serial.println();
 #endif
 
+#if !defined(FORCE_HARD_RESTART_INSTEAD_DEEPSLEEP)
 	// go into deep sleep mode to save energy
 	ESP.deepSleep(DEEP_SLEEP_SECONDS * 1000000);
+#else
+	ESP.reset();
+#endif
 }
 
 void loop() {
