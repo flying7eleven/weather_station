@@ -237,6 +237,7 @@ void setup() {
 	// go into deep sleep mode to save energy
 	ESP.deepSleep(DEEP_SLEEP_SECONDS * 1000000);
 #else
+	delay(5000); // wait at least 5 seconds before resetting
 	ESP.reset();
 #endif
 }
