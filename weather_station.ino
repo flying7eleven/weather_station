@@ -56,8 +56,8 @@ float calculateBatteryChargeInPercent(const float raw_voltage) {
 }
 
 void updateLocalTime() {
-	const long int localTimeZone = 8 * 3600;
-	const int daylightOffsetInSeconds = 0;
+	const long int localTimeZone = 1 * 3600; // GMT+1
+	const int daylightOffsetInSeconds = 1 * 3600; // if DST, add +1 to timezone
 
 	// try to update the time of the board using some NTP servers
 #if !defined(NDEBUG)
