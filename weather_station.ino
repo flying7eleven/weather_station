@@ -104,6 +104,7 @@ void sendMeasurements(float temp, float humidity, float pressure, float raw_volt
 	sprintf(version_str, "%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 #endif
 
+#if 0
 	// be sure that the CA certificate could be loaded successfully, otherwise we have to stop here
 	const bool caCertSuccessfullyLoaded = client.setCACert_P(caCert, caCertLen);
 	if (!caCertSuccessfullyLoaded) {
@@ -114,6 +115,7 @@ void sendMeasurements(float temp, float humidity, float pressure, float raw_volt
 			yield();
 		}
 	}
+#endif
 
 	//
 	const float charge = calculateBatteryChargeInPercent(raw_voltage);
