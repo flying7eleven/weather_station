@@ -36,6 +36,7 @@
 const uint16_t MAX_RAW_VOLTAGE = 810;
 const uint16_t MIN_RAW_VOLTAGE = 600;
 const uint8_t MAX_WIFI_CONNECTION_TRIES = 20;
+const uint8_t MAX_TIME_UPDATE_TRIES = 10;
 const int32_t DEEP_SLEEP_SECONDS = 600;
 
 unsigned long int measureRawBatteryVoltage() { return analogRead(A0); }
@@ -58,6 +59,7 @@ float calculateBatteryChargeInPercent(const float raw_voltage) {
 void updateLocalTime() {
 	const long int localTimeZone = 1 * 3600;	  // GMT+1
 	const int daylightOffsetInSeconds = 1 * 3600; // if DST, add +1 to timezone
+	uint8_t ntpTries = 0;
 
 	// try to update the time of the board using some NTP servers
 #if !defined(NDEBUG)
@@ -65,10 +67,11 @@ void updateLocalTime() {
 #endif
 	configTime(localTimeZone, daylightOffsetInSeconds, "0.europe.pool.ntp.org", "1.europe.pool.ntp.org", "2.europe.pool.ntp.org");
 	time_t now = time(nullptr);
-	while (now < 8 * 3600 * 2) {
+	while (now < 8 * 3600 * 2 && ntpTries <= MAX_TIME_UPDATE_TRIES) {
 		delay(500);
 		Serial.print(".");
 		now = time(nullptr);
+		ntpTries++;
 	}
 #if !defined(NDEBUG)
 	Serial.println("");
