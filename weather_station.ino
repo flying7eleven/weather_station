@@ -23,6 +23,7 @@
 
 #define NDEBUG // if defined, we run in release mode
 // #define FORCE_HARD_RESTART_INSTEAD_DEEPSLEEP
+// #define SIMULATE_MEASUREMENT
 
 #include "weather_station/SecureOTA.h"
 #include "weather_station/root_cert.h"
@@ -38,9 +39,9 @@ const uint16_t MAX_RAW_VOLTAGE = 806;
 const uint16_t MIN_RAW_VOLTAGE = 600;
 const uint8_t MAX_WIFI_CONNECTION_TRIES = 20;
 const uint8_t MAX_TIME_UPDATE_TRIES = 10;
-const int32_t DEEP_SLEEP_SECONDS = 60 * 15; // sleep for 15 Minutes after each measurement
+const int32_t DEEP_SLEEP_SECONDS = 60 * 15;		// sleep for 15 Minutes after each measurement
 const int32_t LOCAL_TIMEZONE_OFFSET = 1 * 3600; // GMT+1
-const int32_t DST_TIMEZONE_OFFSET = 1 * 3600;   // if DST, add +1 to timezone
+const int32_t DST_TIMEZONE_OFFSET = 1 * 3600;	// if DST, add +1 to timezone
 
 unsigned long int measureRawBatteryVoltage() { return analogRead(A0); }
 
@@ -87,15 +88,11 @@ void updateLocalTime() {
 #endif
 }
 
-void sendMeasurements(float temp, float humidity, float pressure, float raw_voltage) {
+void sendMeasurements(const char *chipId, float temp, float humidity, float pressure, float raw_voltage) {
 	const String postUrl = ENDPOINT_BASE;
 	HTTPClient http;
 	BearSSL::WiFiClientSecure client;
 	client.setInsecure();
-
-	// get the id of the chip for authentication purposes
-	char tmp[9];
-	sprintf(tmp, "%08X", ESP.getChipId());
 
 	// get the version of the current firmare
 	char version_str[13]; // would be able to store "10.10.10-dev\0" so should be enough
@@ -131,7 +128,7 @@ void sendMeasurements(float temp, float humidity, float pressure, float raw_volt
 	jsonData["pressure"] = pressure;
 	jsonData["raw_voltage"] = raw_voltage;
 	jsonData["charge"] = charge;
-	jsonData["sensor"] = tmp;
+	jsonData["sensor"] = chipId;
 	jsonData["firmware_version"] = version_str;
 
 	//
@@ -192,8 +189,19 @@ void measureAndShowValues() {
 		return;
 	}
 
+	// get the id of the chip for authentication purposes
+	char tmp[9];
+	sprintf(tmp, "%08X", ESP.getChipId());
+
 	// send it
-	sendMeasurements(measured_temp, measured_humi, measured_pres, raw_voltage);
+	sendMeasurements(tmp, measured_temp, measured_humi, measured_pres, raw_voltage);
+}
+
+void sendSimulatedMeasurement() {
+	char tmp[9];
+	sprintf(tmp, "DEADBEEF");
+
+	sendMeasurements(tmp, 10.0f, 10.0f, 1000.0f, 100);
 }
 
 void setup() {
@@ -224,16 +232,30 @@ void setup() {
 #if !defined(NDEBUG)
 			Serial.println();
 			Serial.printf("Could not connect after %d tries, resetting and starting from the beginning...", connectionTries);
+			Serial.println();
 #endif
 			ESP.reset();
 		}
 	}
-
+#if !defined(NDEBUG)
+	Serial.printf("Connected to the WiFi after %d tries...", connectionTries);
+	Serial.println();
+#endif
 	// ensure the local time is up to date (required for SSL cert validation)
 	updateLocalTime();
 
 	// do the actual measurements and send the values to a server
+#if !defined(SIMULATE_MEASUREMENT)
 	measureAndShowValues();
+#else
+
+#if !defined(NDEBUG)
+	sendSimulatedMeasurement();
+#else
+#error "Cannot simulate measurements in production mode. Are you sure the defines are set correctly?"
+#endif
+
+#endif
 
 	// disconnect from the network before proceeding
 	WiFi.disconnect(true);
