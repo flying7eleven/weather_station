@@ -34,7 +34,7 @@
 #include <ESP8266WiFi.h>
 #include <pins_arduino.h>
 
-const uint16_t MAX_RAW_VOLTAGE = 810;
+const uint16_t MAX_RAW_VOLTAGE = 806;
 const uint16_t MIN_RAW_VOLTAGE = 600;
 const uint8_t MAX_WIFI_CONNECTION_TRIES = 20;
 const uint8_t MAX_TIME_UPDATE_TRIES = 10;
