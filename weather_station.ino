@@ -208,7 +208,8 @@ void setup() {
 
 	// just print a simple header
 	Serial.println();
-	Serial.printf("Solar Powered Weather Station %d.%d.%d - Written by Tim Huetz. All rights reserved.\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+	Serial.printf("Solar Powered Weather Station %d.%d.%d - Written by Tim Huetz. All rights reserved.", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+	Serial.println();
 	Serial.printf("================================================================================");
 	Serial.println();
 #endif
