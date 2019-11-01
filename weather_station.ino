@@ -38,7 +38,7 @@ const uint16_t MAX_RAW_VOLTAGE = 810;
 const uint16_t MIN_RAW_VOLTAGE = 600;
 const uint8_t MAX_WIFI_CONNECTION_TRIES = 20;
 const uint8_t MAX_TIME_UPDATE_TRIES = 10;
-const int32_t DEEP_SLEEP_SECONDS = 600;
+const int32_t DEEP_SLEEP_SECONDS = 60 * 15; // sleep for 15 Minutes after each measurement
 const int32_t LOCAL_TIMEZONE_OFFSET = 1 * 3600; // GMT+1
 const int32_t DST_TIMEZONE_OFFSET = 1 * 3600;   // if DST, add +1 to timezone
 
