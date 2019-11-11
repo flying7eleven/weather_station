@@ -21,7 +21,6 @@
  * SOFTWARE.
  */
 
-#define NDEBUG // if defined, we run in release mode
 // #define FORCE_HARD_RESTART_INSTEAD_DEEPSLEEP
 // #define SIMULATE_MEASUREMENT
 
