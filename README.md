@@ -6,7 +6,8 @@ by [3KUdelta](https://github.com/3KUdelta/Solar_WiFi_Weather_Station).
 The code was restructured and partly rewritten to fulfill my own requirements.
 
 ## Development
-TODO
+The easiest way of using this project is the [PlatformIO](https://platformio.org/) IDE. The project is fully configured with a project definition which can be used
+to fetch all required libraries and build the firmware.
 
 ### Code signing
 TODO

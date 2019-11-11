@@ -25,10 +25,10 @@
 // #define FORCE_HARD_RESTART_INSTEAD_DEEPSLEEP
 // #define SIMULATE_MEASUREMENT
 
-#include "weather_station/SecureOTA.h"
-#include "weather_station/root_cert.h"
-#include "weather_station/version.h"
-#include "weather_station/wifi.h"
+#include "SecureOTA.h"
+#include "root_cert.h"
+#include "version.h"
+#include "wifi.h"
 #include <Adafruit_BME280.h>
 #include <Arduino_JSON.h>
 #include <ESP8266HTTPClient.h>
