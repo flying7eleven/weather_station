@@ -180,7 +180,7 @@ void measureAndShowValues() {
 	const float raw_voltage = measureRawBatteryVoltage();
 
 	// ensure that we do not send inaccurate measurements which are caused by a too low voltage
-	if (MIN_RAW_VOLTAGE > raw_voltage) {
+	if (MIN_RAW_VOLTAGE >= raw_voltage) {
 #if !defined(NDEBUG)
 		Serial.printf("Not sending last measurement since the raw_voltage (%.2f) droped to or below %d", raw_voltage, MIN_RAW_VOLTAGE);
 		Serial.println();
