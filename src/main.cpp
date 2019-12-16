@@ -38,7 +38,7 @@
 const bool USE_SSL = false;
 const int32_t WIFI_CHANNEL = 6;
 const uint16_t MAX_RAW_VOLTAGE = 800;
-const uint16_t MIN_RAW_VOLTAGE = 600;
+const uint16_t MIN_RAW_VOLTAGE = 605;
 const uint8_t MAX_WIFI_CONNECTION_TRIES = 20;
 const uint8_t MAX_TIME_UPDATE_TRIES = 10;
 const int32_t DEEP_SLEEP_SECONDS = 60 * 15;      // sleep for 15 Minutes after each measurement
