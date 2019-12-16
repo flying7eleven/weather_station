@@ -249,6 +249,11 @@ void setup() {
     // ensure the local time is up to date (required for SSL cert validation)
     if (USE_SSL) {
         updateLocalTime();
+    } else {
+#if !defined(NDEBUG)
+        Serial.printf("Not updating the time since SSL verification is turned off");
+        Serial.println();
+#endif
     }
 
     // do the actual measurements and send the values to a server
