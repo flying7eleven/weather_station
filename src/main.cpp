@@ -34,6 +34,7 @@
 #include <ESP8266WiFi.h>
 #include <pins_arduino.h>
 
+const int32_t WIFI_CHANNEL = 6;
 const uint16_t MAX_RAW_VOLTAGE = 800;
 const uint16_t MIN_RAW_VOLTAGE = 600;
 const uint8_t MAX_WIFI_CONNECTION_TRIES = 20;
@@ -223,7 +224,7 @@ void setup() {
 
 	// try to connect to the wifi
 	WiFi.hostname(WIFI_HOST);
-	WiFi.begin(WIFI_SSID, WIFI_PASS);
+	WiFi.begin(WIFI_SSID, WIFI_PASS, WIFI_CHANNEL);
 	while (WiFi.status() != WL_CONNECTED) {
 		connectionTries++;
 		delay(500);
