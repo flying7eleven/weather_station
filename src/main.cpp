@@ -34,6 +34,7 @@
 #include <ESP8266WiFi.h>
 #include <pins_arduino.h>
 
+const bool USE_SSL = false;
 const int32_t WIFI_CHANNEL = 6;
 const uint16_t MAX_RAW_VOLTAGE = 800;
 const uint16_t MIN_RAW_VOLTAGE = 600;
@@ -103,18 +104,18 @@ void sendMeasurements(const char *chipId, float temp, float humidity, float pres
 	sprintf(version_str, "%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 #endif
 
-#if 0
-	// be sure that the CA certificate could be loaded successfully, otherwise we have to stop here
-	const bool caCertSuccessfullyLoaded = client.setCACert_P(caCert, caCertLen);
-	if (!caCertSuccessfullyLoaded) {
-#if !defined(NDEBUG)
-		Serial.println("Failed to load root CA certificate!");
-#endif
-		while (true) {
-			yield();
+	if (USE_SSL) {
+		// be sure that the CA certificate could be loaded successfully, otherwise we have to stop here
+		const bool caCertSuccessfullyLoaded = client.setCACert_P(caCert, caCertLen);
+		if (!caCertSuccessfullyLoaded) {
+	#if !defined(NDEBUG)
+			Serial.println("Failed to load root CA certificate!");
+	#endif
+			while (true) {
+				yield();
+			}
 		}
 	}
-#endif
 
 	//
 	const float charge = calculateBatteryChargeInPercent(raw_voltage);
@@ -242,7 +243,9 @@ void setup() {
 	Serial.println();
 #endif
 	// ensure the local time is up to date (required for SSL cert validation)
-	updateLocalTime();
+	if (USE_SSL) {
+		updateLocalTime();
+	}
 
 	// do the actual measurements and send the values to a server
 #if !defined(SIMULATE_MEASUREMENT)
@@ -269,7 +272,7 @@ void setup() {
 	// go into deep sleep mode to save energy
 	ESP.deepSleep(DEEP_SLEEP_SECONDS * 1000000);
 #else
-	delay(5000); // wait at least 5 seconds before resetting
+	delay(15000); // wait at least 15 seconds before resetting
 	ESP.reset();
 #endif
 }
