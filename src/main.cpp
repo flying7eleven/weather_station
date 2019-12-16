@@ -141,6 +141,7 @@ void sendMeasurements(const char *chipId, float temp, float humidity, float pres
 
 	//
 	http.begin(client, postUrl);
+	http.setUserAgent("WeatherStation/BA188");
 	http.addHeader("Content-Type", "application/json");
 	const int httpCode = http.POST(postData);
 #if !defined(NDEBUG)
