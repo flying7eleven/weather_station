@@ -108,9 +108,9 @@ void sendMeasurements(const char *chipId, float temp, float humidity, float pres
 		// be sure that the CA certificate could be loaded successfully, otherwise we have to stop here
 		const bool caCertSuccessfullyLoaded = client.setCACert_P(caCert, caCertLen);
 		if (!caCertSuccessfullyLoaded) {
-	#if !defined(NDEBUG)
+#if !defined(NDEBUG)
 			Serial.println("Failed to load root CA certificate!");
-	#endif
+#endif
 			while (true) {
 				yield();
 			}
