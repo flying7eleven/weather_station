@@ -37,7 +37,7 @@
 
 const bool USE_SSL = false;
 const int32_t WIFI_CHANNEL = 6;
-const uint16_t MAX_RAW_VOLTAGE = 800;
+const uint16_t MAX_RAW_VOLTAGE = 807;
 const uint16_t MIN_RAW_VOLTAGE = 605;
 const uint8_t MAX_WIFI_CONNECTION_TRIES = 20;
 const uint8_t MAX_TIME_UPDATE_TRIES = 10;
