@@ -23,7 +23,7 @@
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 2
-#define VERSION_PATCH 5
+#define VERSION_PATCH 6
 
 #define ENDPOINT_HOST "127.0.0.1"
 #define ENDPOINT_PATH "/weather/measurement"
