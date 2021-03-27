@@ -30,12 +30,9 @@
 #include <ESP8266WiFi.h>
 #include <pins_arduino.h>
 
-#include "SecureOTA.h"
-#include "root_cert.h"
 #include "version.h"
 #include "wifi.h"
 
-const bool USE_SSL = false;
 const int32_t WIFI_CHANNEL = 6;
 const uint16_t MAX_RAW_VOLTAGE = 807;
 const uint16_t MIN_RAW_VOLTAGE = 605;
@@ -64,34 +61,6 @@ float calculateBatteryChargeInPercent(const float raw_voltage) {
     return percentage;
 }
 
-void updateLocalTime() {
-    uint8_t ntpTries = 0;
-
-    // try to update the time of the board using some NTP servers
-#if !defined(NDEBUG)
-    Serial.print("Setting time using NTP");
-#endif
-    configTime(LOCAL_TIMEZONE_OFFSET, DST_TIMEZONE_OFFSET, "0.europe.pool.ntp.org", "1.europe.pool.ntp.org", "2.europe.pool.ntp.org");
-    time_t now = time(nullptr);
-    while (now < 8 * 3600 * 2 && ntpTries <= MAX_TIME_UPDATE_TRIES) {
-        delay(500);
-        Serial.print(".");
-        now = time(nullptr);
-        ntpTries++;
-    }
-#if !defined(NDEBUG)
-    Serial.println("");
-#endif
-
-// if we are in debug mode, show the updated local time in a human readable form
-#if !defined(NDEBUG)
-    struct tm timeinfo;
-    gmtime_r(&now, &timeinfo);
-    Serial.print("Current time: ");
-    Serial.print(asctime(&timeinfo));
-#endif
-}
-
 void sendMeasurements(const char* chipId, float temp, float humidity, float pressure, float raw_voltage) {
     HTTPClient http;
     BearSSL::WiFiClientSecure client;
@@ -105,19 +74,6 @@ void sendMeasurements(const char* chipId, float temp, float humidity, float pres
 #else
     sprintf(version_str, "%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 #endif
-
-    if (USE_SSL) {
-        // be sure that the CA certificate could be loaded successfully, otherwise we have to stop here
-        const bool caCertSuccessfullyLoaded = client.setCACert_P(caCert, caCertLen);
-        if (!caCertSuccessfullyLoaded) {
-#if !defined(NDEBUG)
-            Serial.println("Failed to load root CA certificate!");
-#endif
-            while (true) {
-                yield();
-            }
-        }
-    }
 
     //
     const float charge = calculateBatteryChargeInPercent(raw_voltage);
@@ -245,15 +201,6 @@ void setup() {
     Serial.printf("Connected to the WiFi after %d tries...", connectionTries);
     Serial.println();
 #endif
-    // ensure the local time is up to date (required for SSL cert validation)
-    if (USE_SSL) {
-        updateLocalTime();
-    } else {
-#if !defined(NDEBUG)
-        Serial.printf("Not updating the time since SSL verification is turned off");
-        Serial.println();
-#endif
-    }
 
     // do the actual measurements and send the values to a server
 #if !defined(SIMULATE_MEASUREMENT)
