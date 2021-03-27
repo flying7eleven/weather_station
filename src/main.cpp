@@ -93,7 +93,6 @@ void updateLocalTime() {
 }
 
 void sendMeasurements(const char* chipId, float temp, float humidity, float pressure, float raw_voltage) {
-    const String postUrl = ENDPOINT_BASE;
     HTTPClient http;
     BearSSL::WiFiClientSecure client;
     client.setInsecure();
@@ -143,7 +142,7 @@ void sendMeasurements(const char* chipId, float temp, float humidity, float pres
 #endif
 
     //
-    http.begin(client, postUrl);
+    http.begin(ENDPOINT_HOST, ENDPOINT_PORT, ENDPOINT_PATH);
     http.setUserAgent("WeatherStation/BA188");
     http.addHeader("Content-Type", "application/json");
     const int httpCode = http.POST(postData);

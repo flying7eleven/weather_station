@@ -25,4 +25,6 @@
 #define VERSION_MINOR 2
 #define VERSION_PATCH 5
 
-#define ENDPOINT_BASE ""
+#define ENDPOINT_HOST "127.0.0.1"
+#define ENDPOINT_PATH "/weather/measurement"
+#define ENDPOINT_PORT 80
