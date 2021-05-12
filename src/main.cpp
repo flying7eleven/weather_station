@@ -21,9 +21,6 @@
  * SOFTWARE.
  */
 
-// #define FORCE_HARD_RESTART_INSTEAD_DEEPSLEEP
-// #define SIMULATE_MEASUREMENT
-
 #include <Adafruit_BME280.h>
 #include <Arduino_JSON.h>
 #include <ESP8266HTTPClient.h>
@@ -33,46 +30,46 @@
 #include "version.h"
 #include "wifi.h"
 
-const int32_t WIFI_CHANNEL = 6;
+const uint8_t WIFI_CHANNEL = 6;
 const uint16_t MAX_RAW_VOLTAGE = 814;
 const uint16_t MIN_RAW_VOLTAGE = 605;
 const uint8_t MAX_WIFI_CONNECTION_TRIES = 20;
-const uint8_t MAX_TIME_UPDATE_TRIES = 10;
-const int32_t DEEP_SLEEP_SECONDS = 60 * 15;      // sleep for 15 Minutes after each measurement
-const int32_t LOCAL_TIMEZONE_OFFSET = 1 * 3600;  // GMT+1
-const int32_t DST_TIMEZONE_OFFSET = 1 * 3600;    // if DST, add +1 to timezone
+const int32_t DEEP_SLEEP_SECONDS = 60 * 15;    // sleep for 15 Minutes after each measurement
+const uint8_t BME260_ONE_WIRE_ADDRESS = 0x76;  // address either 0x76 or 0x77
+const uint32_t MICROSECONDS_PER_SECOND = 1000000;
+const uint16_t WAIT_FOR_WIFI_IN_MILLISECONDS = 500;
 
-unsigned long int measureRawBatteryVoltage() {
-    return analogRead(A0);
+auto measureRawBatteryVoltage() -> float {
+    return static_cast<float>(analogRead(A0));
 }
 
-float calculateBatteryChargeInPercent(const float raw_voltage) {
+auto calculateBatteryChargeInPercent(const float raw_voltage) -> float {
     const float max_range = MAX_RAW_VOLTAGE - MIN_RAW_VOLTAGE;
-    float percentage = ((raw_voltage - MIN_RAW_VOLTAGE) / max_range) * 100.0f;
+    float percentage = ((raw_voltage - MIN_RAW_VOLTAGE) / max_range) * 100.0F;
 
-    if (percentage > 100.0f) {
-        percentage = 100.0f;
+    if (percentage > 100.0F) {
+        percentage = 100.0F;
     }
 
-    if (percentage < 0.0f) {
-        percentage = 0.0f;
+    if (percentage < 0.0F) {
+        percentage = 0.0F;
     }
 
     return percentage;
 }
 
-void sendMeasurements(const char* chipId, float temp, float humidity, float pressure, float raw_voltage) {
+auto sendMeasurements(const char* chipId, float temp, float humidity, float pressure, float raw_voltage) -> void {
     HTTPClient http;
     BearSSL::WiFiClientSecure client;
     client.setInsecure();
 
-    // get the version of the current firmare
-    char version_str[13];  // would be able to store "10.10.10-dev\0" so should be enough
-    memset(version_str, 0, sizeof(char) * 13);
+    // get the version of the current firmware
+    const uint8_t VERSION_STRING_LENGTH = 13;
+    std::array<char, VERSION_STRING_LENGTH> version_str{};  // would be able to store "10.10.10-dev\0" so should be enough
 #if !defined(NDEBUG)
-    sprintf(version_str, "%d.%d.%d-dev", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+    snprintf(version_str.data(), VERSION_STRING_LENGTH, "%d.%d.%d-dev", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 #else
-    sprintf(version_str, "%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+    snprintf(version_str.data(), VERSION_STRING_LENGTH, "%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 #endif
 
     //
@@ -88,7 +85,7 @@ void sendMeasurements(const char* chipId, float temp, float humidity, float pres
     jsonData["raw_voltage"] = raw_voltage;
     jsonData["charge"] = charge;
     jsonData["sensor"] = chipId;
-    jsonData["firmware_version"] = version_str;
+    jsonData["firmware_version"] = version_str.data();
 
     //
     String postData = JSON.stringify(jsonData);
@@ -101,7 +98,7 @@ void sendMeasurements(const char* chipId, float temp, float humidity, float pres
     http.begin(ENDPOINT_HOST, ENDPOINT_PORT, ENDPOINT_PATH);
     http.setUserAgent("WeatherStation/BA188");
     http.addHeader("Content-Type", "application/json");
-    const int httpCode = http.POST(postData);
+    const uint32_t httpCode = http.POST(postData);
 #if !defined(NDEBUG)
     if (204 != httpCode) {
         Serial.printf("%d - Could not send temperature to endpoint.", httpCode);
@@ -116,8 +113,8 @@ void sendMeasurements(const char* chipId, float temp, float humidity, float pres
 
 void measureAndShowValues() {
     Adafruit_BME280 bme;
-    bool bme_status;
-    bme_status = bme.begin(0x76);  // address either 0x76 or 0x77
+    bool bme_status = false;
+    bme_status = bme.begin(BME260_ONE_WIRE_ADDRESS);
     if (!bme_status) {
 #if !defined(NDEBUG)
         Serial.printf("Could not find a valid BME280 sensor, check wiring!");
@@ -137,31 +134,25 @@ void measureAndShowValues() {
     // get the measurements
     const float measured_temp = bme.readTemperature();
     const float measured_humi = bme.readHumidity();
-    const float measured_pres = bme.readPressure() / 100.0f;
+    const float measured_pres = bme.readPressure() / 100.0F;
     const float raw_voltage = measureRawBatteryVoltage();
 
     // ensure that we do not send inaccurate measurements which are caused by a too low voltage
     if (MIN_RAW_VOLTAGE >= raw_voltage) {
 #if !defined(NDEBUG)
-        Serial.printf("Not sending last measurement since the raw_voltage (%.2f) droped to or below %d", raw_voltage, MIN_RAW_VOLTAGE);
+        Serial.printf("Not sending last measurement since the raw_voltage (%.2f) dropped to or below %d", raw_voltage, MIN_RAW_VOLTAGE);
         Serial.println();
 #endif
         return;
     }
 
     // get the id of the chip for authentication purposes
-    char tmp[9];
-    sprintf(tmp, "%08X", ESP.getChipId());
+    const uint8_t CHIP_ID_STRING_LENGTH = 9;
+    std::array<char, CHIP_ID_STRING_LENGTH> tmp{};
+    snprintf(tmp.data(), CHIP_ID_STRING_LENGTH, "%08X", ESP.getChipId());
 
     // send it
-    sendMeasurements(tmp, measured_temp, measured_humi, measured_pres, raw_voltage);
-}
-
-void sendSimulatedMeasurement() {
-    char tmp[9];
-    sprintf(tmp, "DEADBEEF");
-
-    sendMeasurements(tmp, 10.0f, 10.0f, 1000.0f, 100);
+    sendMeasurements(tmp.data(), measured_temp, measured_humi, measured_pres, raw_voltage);
 }
 
 void setup() {
@@ -173,13 +164,6 @@ void setup() {
 #if !defined(NDEBUG)
     // setup the serial interface with a specified baud rate
     Serial.begin(115200);
-
-    // just print a simple header
-    Serial.println();
-    Serial.printf("Solar Powered Weather Station %d.%d.%d - Written by Tim Huetz. All rights reserved.", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
-    Serial.println();
-    Serial.printf("================================================================================");
-    Serial.println();
 #endif
 
     // try to connect to the wifi
@@ -187,13 +171,8 @@ void setup() {
     WiFi.begin(WIFI_SSID, WIFI_PASS, WIFI_CHANNEL);
     while (WiFi.status() != WL_CONNECTED) {
         connectionTries++;
-        delay(500);
+        delay(WAIT_FOR_WIFI_IN_MILLISECONDS);
         if (connectionTries > MAX_WIFI_CONNECTION_TRIES) {
-#if !defined(NDEBUG)
-            Serial.println();
-            Serial.printf("Could not connect after %d tries, resetting and starting from the beginning...", connectionTries);
-            Serial.println();
-#endif
             ESP.reset();
         }
     }
@@ -203,17 +182,7 @@ void setup() {
 #endif
 
     // do the actual measurements and send the values to a server
-#if !defined(SIMULATE_MEASUREMENT)
     measureAndShowValues();
-#else
-
-#if !defined(NDEBUG)
-    sendSimulatedMeasurement();
-#else
-#error "Cannot simulate measurements in production mode. Are you sure the defines are set correctly?"
-#endif
-
-#endif
 
     // disconnect from the network before proceeding
     WiFi.disconnect(true);
@@ -223,13 +192,8 @@ void setup() {
     Serial.println();
 #endif
 
-#if !defined(FORCE_HARD_RESTART_INSTEAD_DEEPSLEEP)
     // go into deep sleep mode to save energy
-    ESP.deepSleep(DEEP_SLEEP_SECONDS * 1000000);
-#else
-    delay(15000);  // wait at least 15 seconds before resetting
-    ESP.reset();
-#endif
+    ESP.deepSleep(DEEP_SLEEP_SECONDS * MICROSECONDS_PER_SECOND);
 }
 
 void loop() {
