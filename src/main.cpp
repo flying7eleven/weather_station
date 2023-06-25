@@ -1,6 +1,6 @@
 /**
  * MIT License
- * Copyright (c) 2019 - 2021 Tim Huetz
+ * Copyright (c) 2019 - 2023 Tim Janke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@
 #include <Arduino_JSON.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFi.h>
+#include <WiFiClient.h>
 #include <pins_arduino.h>
 
 #include "version.h"
@@ -38,6 +39,8 @@ const int32_t DEEP_SLEEP_SECONDS = 60 * 15;    // sleep for 15 Minutes after eac
 const uint8_t BME260_ONE_WIRE_ADDRESS = 0x76;  // address either 0x76 or 0x77
 const uint32_t MICROSECONDS_PER_SECOND = 1000000;
 const uint16_t WAIT_FOR_WIFI_IN_MILLISECONDS = 500;
+
+WiFiClient wifiClient;
 
 auto measureRawBatteryVoltage() -> float {
     return static_cast<float>(analogRead(A0));
@@ -95,7 +98,7 @@ auto sendMeasurements(const char* chipId, float temp, float humidity, float pres
 #endif
 
     //
-    http.begin(ENDPOINT_HOST, ENDPOINT_PORT, ENDPOINT_PATH);
+    http.begin(wifiClient, ENDPOINT_HOST, ENDPOINT_PORT, ENDPOINT_PATH);
     http.setUserAgent("WeatherStation/BA188");
     http.addHeader("Content-Type", "application/json");
     const uint32_t httpCode = http.POST(postData);
