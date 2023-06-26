@@ -32,7 +32,7 @@
 #include "wifi.h"
 
 const uint8_t WIFI_CHANNEL = 6;
-const uint16_t MAX_RAW_VOLTAGE = 814;
+const uint16_t MAX_RAW_VOLTAGE = 807;
 const uint16_t MIN_RAW_VOLTAGE = 605;
 const uint8_t MAX_WIFI_CONNECTION_TRIES = 20;
 const int32_t DEEP_SLEEP_SECONDS = 60 * 15;    // sleep for 15 Minutes after each measurement
