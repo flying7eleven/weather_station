@@ -42,8 +42,8 @@ const uint16_t WAIT_FOR_WIFI_IN_MILLISECONDS = 500;
 
 WiFiClient wifiClient;
 
-auto measureRawBatteryVoltage() -> float {
-    return static_cast<float>(analogRead(A0));
+auto measureRawBatteryVoltage() -> uint16_t {
+    return static_cast<uint16_t>(analogRead(A0));
 }
 
 auto calculateBatteryChargeInPercent(const float raw_voltage) -> float {
@@ -61,7 +61,7 @@ auto calculateBatteryChargeInPercent(const float raw_voltage) -> float {
     return percentage;
 }
 
-auto sendMeasurements(const char* chipId, float temp, float humidity, float pressure, int raw_voltage) -> void {
+auto sendMeasurements(const char* chipId, float temp, float humidity, float pressure, uint16_t raw_voltage) -> void {
     HTTPClient http;
     BearSSL::WiFiClientSecure client;
     client.setInsecure();
@@ -138,7 +138,7 @@ void measureAndShowValues() {
     const float measured_temp = bme.readTemperature();
     const float measured_humi = bme.readHumidity();
     const float measured_pres = bme.readPressure() / 100.0F;
-    const float raw_voltage = measureRawBatteryVoltage();
+    const uint16_t raw_voltage = measureRawBatteryVoltage();
 
     // ensure that we do not send inaccurate measurements which are caused by a too low voltage
     if (MIN_RAW_VOLTAGE >= raw_voltage) {
