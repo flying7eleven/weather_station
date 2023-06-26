@@ -61,7 +61,7 @@ auto calculateBatteryChargeInPercent(const float raw_voltage) -> float {
     return percentage;
 }
 
-auto sendMeasurements(const char* chipId, float temp, float humidity, float pressure, float raw_voltage) -> void {
+auto sendMeasurements(const char* chipId, float temp, float humidity, float pressure, int raw_voltage) -> void {
     HTTPClient http;
     BearSSL::WiFiClientSecure client;
     client.setInsecure();
