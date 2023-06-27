@@ -23,7 +23,7 @@
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 3
-#define VERSION_PATCH 0
+#define VERSION_PATCH 1
 
 #define ENDPOINT_HOST "192.168.1.50"
 #define ENDPOINT_PATH "/v1/sensor/measurement"
